@@ -1,0 +1,34 @@
+# app/config.py
+
+from pathlib import Path
+
+# --- Project Root ---
+# This reliably finds the project's root directory, making paths portable.
+# Path(__file__) is this file -> .parent is the 'app' directory -> .parent is the project root.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# --- Data and Database Paths ---
+# Path to the directory where source documents are stored.
+DATA_DIR = BASE_DIR / "data"
+
+# Full path to the source PDF file.
+PDF_FILE_PATH = DATA_DIR / "faq_manual.pdf"
+
+# Path to the directory where the ChromaDB vector store will be persisted.
+VECTOR_STORE_DIR = BASE_DIR / "db"
+VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db") # ChromaDB needs the path as a string
+
+
+# --- AI Model Configuration ---
+# Name of the local model to use for the embedding process.
+# Ensure this model is pulled in Ollama (e.g., `ollama pull mistral`).
+EMBEDDING_MODEL_NAME = "mistral"
+
+# Name of the local model to use for the generation (chat) process.
+LLM_MODEL_NAME = "mistral"
+
+
+# --- Retriever Configuration ---
+# The number of top relevant document chunks to retrieve for a given query.
+RETRIEVER_TOP_K = 5
