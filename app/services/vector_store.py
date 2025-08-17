@@ -26,42 +26,21 @@ def create_embedding_model(model_name: str) -> OllamaEmbeddings:
     return OllamaEmbeddings(model=model_name)
 
 def get_vector_store(
-    chunks: List[Document], 
-    embedding_model: OllamaEmbeddings, 
-    persist_directory: str
+    chunks: List[Document],
+    embedding_model: OllamaEmbeddings
 ) -> Chroma:
     """
-    Creates a new ChromaDB vector store or loads an existing one.
-
-    If the `persist_directory` already exists, it loads the database from there.
-    Otherwise, it creates a new database from the provided document chunks,
-    computes the embeddings, and saves it to the directory for future use.
-
-    Args:
-        chunks (List[Document]): The list of document chunks to be embedded.
-        embedding_model (OllamaEmbeddings): The model used to create embeddings.
-        persist_directory (str): The directory to save/load the vector store.
-
-    Returns:
-        Chroma: An instance of the Chroma vector store.
+    Creates a new in-memory ChromaDB vector store.
     """
-    if os.path.exists(persist_directory):
-        logger.info(f"Loading existing vector store from: {persist_directory}")
-        vector_store = Chroma(
-            persist_directory=persist_directory,
-            embedding_function=embedding_model
-        )
-    else:
-        if not chunks:
-            raise ValueError("Document chunks are required to create a new vector store.")
-        logger.info(f"Creating new vector store at: {persist_directory}")
-        vector_store = Chroma.from_documents(
-            documents=chunks,
-            embedding=embedding_model,
-            persist_directory=persist_directory
-        )
-        logger.info("Vector store created and persisted successfully.")
-        
+    if not chunks:
+        raise ValueError("Document chunks are required to create the vector store.")
+
+    logger.info("Creating new in-memory vector store...")
+    vector_store = Chroma.from_documents(
+        documents=chunks,
+        embedding=embedding_model
+    )
+    logger.info("In-memory vector store created successfully.")
     return vector_store
 
 def create_retriever(vector_store: Chroma, top_k: int = 4) -> BaseRetriever:

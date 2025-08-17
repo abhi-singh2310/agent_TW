@@ -1,7 +1,7 @@
 # main.py
 
 import logging
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response, stream_with_context
 from flask_cors import CORS
 
 # Import configurations and core components
@@ -47,7 +47,6 @@ def initialize_agent():
     vector_store = get_vector_store(
         chunks=chunks,
         embedding_model=embedding_model,
-        persist_directory=config.VECTOR_STORE_PATH
     )
 
     # 4. Create the retriever
@@ -77,7 +76,7 @@ def serve_index():
 @app.route('/ask', methods=['POST'])
 def ask_agent():
     """
-    Handles questions to the agent. Expects a JSON payload with a 'query' key.
+    Handles questions to the agent and streams the response.
     """
     if not agent:
         return jsonify({"error": "Agent not initialized"}), 503
@@ -92,8 +91,8 @@ def ask_agent():
         return jsonify({"error": "Missing 'query' in request body"}), 400
 
     try:
-        response = agent.ask(query)
-        return jsonify(response)
+        # Use stream_with_context for a streaming response
+        return Response(stream_with_context(agent.ask(query)), mimetype='application/json')
     except Exception as e:
         logger.error(f"An error occurred while processing the query: {e}")
         return jsonify({"error": "An internal error occurred."}), 500

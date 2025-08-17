@@ -1,6 +1,7 @@
 # app/agent.py
 
 import logging
+import json
 from typing import Dict, Any, List
 from operator import itemgetter
 
@@ -37,18 +38,45 @@ class GenAIAgent:
         """
         # 1. Define the prompt template
         template = """
-        You are a helpful assistant for a customer support team.
-        Use the following pieces of retrieved context to answer the question.
-        If you don't know the answer from the provided context, clearly state that you don't know.
-        Your answer should be concise, professional, and limited to a maximum of three sentences.
+            **Role:** You are a helpful assistant for a customer support team.
 
-        Context:
-        {context}
+            **Task:** Your goal is to provide accurate and helpful answers to customer questions based *only* on the provided context. You will be given a few examples of how to answer questions.
 
-        Question:
-        {question}
+            **Instructions:**
+            1.  **Follow the Examples:** Emulate the tone and style of the examples provided below.
+            2.  **Analyze the Context:** Carefully read the retrieved context before answering the new question.
+            3.  **Synthesize the Answer:** Formulate a clear and concise answer to the user's question using only the information from the context.
+            4.  **Constraints:**
+                * Do not use any information outside of the provided context.
+                * If the answer is not in the context, explicitly state: "I'm sorry, but I don't have enough information to answer that question."
+                * Keep your answer to a maximum of three sentences.
 
-        Answer:
+            ---
+            **Examples:**
+
+            **Example 1:**
+            **Question:** What tools will I need for assembly?
+            [cite_start]**Answer:** All the tools you need, which is usually an Allen key, are provided in the box. [cite: 11] [cite_start]For some of our more complex items, like modular sofas or beds, you might also need a standard Phillips-head screwdriver. [cite: 12]
+
+            **Example 2:**
+            **Question:** Can I return a sofa if I change my mind?
+            [cite_start]**Answer:** You can return most items within 30 days of delivery, as long as they are unused and in their original packaging. [cite: 24, 25] [cite_start]However, for change-of-mind returns, the cost of the return shipping will be deducted from your refund. [cite: 28]
+
+            **Example 3:**
+            **Question:** How do I take care of my new wooden table?
+            [cite_start]**Answer:** To care for your wooden furniture, you should dust it regularly with a soft cloth and avoid placing it in direct sunlight. [cite: 56, 57] [cite_start]It's also a good idea to use coasters to prevent marks and apply wood polish every 6 to 12 months. [cite: 58, 59]
+
+            ---
+
+            **New Task:**
+
+            **Context:**
+            {context}
+
+            **Question:**
+            {question}
+
+            **Answer:**
         """
         prompt = PromptTemplate.from_template(template)
 
@@ -97,28 +125,27 @@ class GenAIAgent:
         unique_sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
         return sorted(unique_sources, key=lambda x: x.get('page', 0))
 
-    def ask(self, query: str) -> Dict[str, Any]:
+    def ask(self, query: str): # The signature no longer needs type hints for the return
         """
-        Executes a query against the RAG chain and returns the answer and sources.
+        Executes a query against the RAG chain and streams the results.
 
-        Args:
-            query (str): The user's question.
-
-        Returns:
-            Dict[str, Any]: A dictionary containing the 'answer' and 'sources'.
+        This method now yields a stream of JSON objects for the answer
+        and a final object containing the sources.
         """
-        logger.info(f"Received query: {query}")
-        result = self.rag_chain.invoke(query)
-        
-        answer = result.get("answer", "No answer could be generated.")
-        source_docs = result.get("context", [])
-        
+        logger.info(f"Received query for streaming: {query}")
+
+        # Use .stream() which returns an iterator
+        stream = self.rag_chain.stream(query)
+
+        # We need to manually handle the context and answer streaming
+        source_docs = []
+        for chunk in stream:
+            if "context" in chunk:
+                source_docs.extend(chunk["context"])
+            if "answer" in chunk:
+                # Yield each part of the answer as it comes in
+                yield json.dumps({"answer": chunk["answer"]}) + "\n"
+
+        # After the answer is fully streamed, yield the sources
         formatted_sources = self._format_sources(source_docs)
-
-        logger.info(f"Generated answer: {answer}")
-        logger.info(f"Sources: {formatted_sources}")
-
-        return {
-            "answer": answer,
-            "sources": formatted_sources
-        }
+        yield json.dumps({"sources": formatted_sources}) + "\n"
