@@ -125,27 +125,23 @@ class GenAIAgent:
         unique_sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
         return sorted(unique_sources, key=lambda x: x.get('page', 0))
 
-    def ask(self, query: str): # The signature no longer needs type hints for the return
+    def ask(self, query: str) -> Dict[str, Any]:
         """
-        Executes a query against the RAG chain and streams the results.
-
-        This method now yields a stream of JSON objects for the answer
-        and a final object containing the sources.
+        Executes a query against the RAG chain and returns a single result.
         """
-        logger.info(f"Received query for streaming: {query}")
-
-        # Use .stream() which returns an iterator
-        stream = self.rag_chain.stream(query)
-
-        # We need to manually handle the context and answer streaming
-        source_docs = []
-        for chunk in stream:
-            if "context" in chunk:
-                source_docs.extend(chunk["context"])
-            if "answer" in chunk:
-                # Yield each part of the answer as it comes in
-                yield json.dumps({"answer": chunk["answer"]}) + "\n"
-
-        # After the answer is fully streamed, yield the sources
+        logger.info(f"Received query: {query}")
+        
+        # Use .invoke() which returns the final result
+        result = self.rag_chain.invoke(query)
+        
+        # Format the sources from the context
+        source_docs = result.get("context", [])
         formatted_sources = self._format_sources(source_docs)
-        yield json.dumps({"sources": formatted_sources}) + "\n"
+        
+        # Combine the answer and sources into a single response
+        response = {
+            "answer": result.get("answer"),
+            "sources": formatted_sources
+        }
+        
+        return response

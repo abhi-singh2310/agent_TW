@@ -12,6 +12,7 @@ from app.services.vector_store import (
     create_embedding_model,
     get_vector_store,
     create_retriever,
+    create_reranker_retriever,
 )
 
 # --- Basic Configuration ---
@@ -49,15 +50,23 @@ def initialize_agent():
         embedding_model=embedding_model,
     )
 
-    # 4. Create the retriever
-    retriever = create_retriever(
+    # 4. Create the ensemble retriever
+    ensemble_retriever = create_retriever(
         vector_store=vector_store,
+        chunks=chunks,
         top_k=config.RETRIEVER_TOP_K
     )
 
-    # 5. Initialize the GenAI Agent
+    # 5. Create the reranker retriever
+    reranker_retriever = create_reranker_retriever(
+        ensemble_retriever=ensemble_retriever,
+        model_name=config.RERANKER_MODEL_NAME,
+        top_n=config.RERANKER_TOP_N
+    )
+
+    # 6. Initialize the GenAI Agent
     agent = GenAIAgent(
-        retriever=retriever,
+        retriever=reranker_retriever,
         llm_model_name=config.LLM_MODEL_NAME
     )
     logger.info("--- Agent Initialization Complete ---")
@@ -76,7 +85,7 @@ def serve_index():
 @app.route('/ask', methods=['POST'])
 def ask_agent():
     """
-    Handles questions to the agent and streams the response.
+    Handles questions to the agent and returns a single JSON response.
     """
     if not agent:
         return jsonify({"error": "Agent not initialized"}), 503
@@ -91,8 +100,9 @@ def ask_agent():
         return jsonify({"error": "Missing 'query' in request body"}), 400
 
     try:
-        # Use stream_with_context for a streaming response
-        return Response(stream_with_context(agent.ask(query)), mimetype='application/json')
+        # Get the complete response from the agent
+        response = agent.ask(query)
+        return jsonify(response)
     except Exception as e:
         logger.error(f"An error occurred while processing the query: {e}")
         return jsonify({"error": "An internal error occurred."}), 500

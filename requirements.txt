@@ -1,3 +1,5 @@
+# requirements.txt
+
 flask
 flask-cors
 langchain
@@ -5,3 +7,7 @@ langchain-community
 chromadb
 pypdf
 pytest
+rank_bm25
+sentence-transformers
+torch
+numpy<2.0

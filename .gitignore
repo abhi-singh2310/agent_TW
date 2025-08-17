@@ -212,3 +212,5 @@ __marimo__/
 **.xlsx
 **.xlsm
 **/db/*
+
+**.DS_Store*

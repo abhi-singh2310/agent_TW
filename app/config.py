@@ -31,4 +31,10 @@ LLM_MODEL_NAME = "mistral:7b-instruct-q4_K_M"
 
 # --- Retriever Configuration ---
 # The number of top relevant document chunks to retrieve for a given query.
-RETRIEVER_TOP_K = 4
+RETRIEVER_TOP_K = 15
+
+# --- Reranker Configuration ---
+# The number of top documents to return after reranking.
+RERANKER_TOP_N = 3
+# The name of the local cross-encoder model to use for reranking.
+RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
