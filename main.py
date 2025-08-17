@@ -48,6 +48,7 @@ def initialize_agent():
     vector_store = get_vector_store(
         chunks=chunks,
         embedding_model=embedding_model,
+        persist_directory=config.VECTOR_STORE_PATH
     )
 
     # 4. Create the ensemble retriever
