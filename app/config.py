@@ -23,12 +23,18 @@ VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db") # ChromaDB needs the pat
 # --- AI Model Configuration ---
 # Name of the local model to use for the embedding process.
 # Ensure this model is pulled in Ollama (e.g., `ollama pull mistral`).
-EMBEDDING_MODEL_NAME = "mistral"
+EMBEDDING_MODEL_NAME = "nomic-embed-text"
 
 # Name of the local model to use for the generation (chat) process.
-LLM_MODEL_NAME = "mistral"
+LLM_MODEL_NAME = "mistral:7b-instruct-q4_K_M"
 
 
 # --- Retriever Configuration ---
 # The number of top relevant document chunks to retrieve for a given query.
-RETRIEVER_TOP_K = 5
+RETRIEVER_TOP_K = 15
+
+# --- Reranker Configuration ---
+# The number of top documents to return after reranking.
+RERANKER_TOP_N = 3
+# The name of the local cross-encoder model to use for reranking.
+RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
