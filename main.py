@@ -1,7 +1,7 @@
 # main.py
 
 import logging
-from flask import Flask, request, jsonify, send_from_directory, Response, stream_with_context
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
 # Import configurations and core components
@@ -20,8 +20,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # --- Global Agent Initialization ---
-# This setup runs only once when the server starts.
 agent = None
+USE_RERANKER = True # Set to False to disable the reranker for a speed test
 
 def initialize_agent():
     """
@@ -37,49 +37,55 @@ def initialize_agent():
     logger.info("--- Starting Agent Initialization ---")
 
     # 1. Load and split the document
-    logger.info("Step 1: Loading and splitting PDF...")
+    print(">>> STEP 1: Loading and splitting PDF...")
     chunks = load_and_split_pdf(str(config.PDF_FILE_PATH))
-    logger.info("Step 1: Complete.")
+    print("<<< STEP 1: Complete.\n")
 
     # 2. Initialize embedding model
-    logger.info("Step 2: Initializing embedding model...")
+    print(">>> STEP 2: Initializing embedding model (might download model)...")
     embedding_model = create_embedding_model(model_name=config.EMBEDDING_MODEL_NAME)
-    logger.info("Step 2: Complete.")
+    print("<<< STEP 2: Complete.\n")
 
     # 3. Get or create the vector store
-    logger.info("Step 3: Getting vector store...")
+    print(">>> STEP 3: Getting vector store (might re-create embeddings)...")
     vector_store = get_vector_store(
         chunks=chunks,
         embedding_model=embedding_model,
         persist_directory=config.VECTOR_STORE_PATH
     )
-    logger.info("Step 3: Complete.")
+    print("<<< STEP 3: Complete.\n")
 
     # 4. Create the ensemble retriever
-    logger.info("Step 4: Creating ensemble retriever...")
+    print(">>> STEP 4: Creating ensemble retriever...")
     ensemble_retriever = create_retriever(
         vector_store=vector_store,
         chunks=chunks,
         top_k=config.RETRIEVER_TOP_K
     )
-    logger.info("Step 4: Complete.")
+    print("<<< STEP 4: Complete.\n")
 
-    # 5. Create the reranker retriever
-    logger.info("Step 5: Creating reranker retriever... (This may take a moment)")
-    reranker_retriever = create_reranker_retriever(
-        ensemble_retriever=ensemble_retriever,
-        model_name=config.RERANKER_MODEL_NAME,
-        top_n=config.RERANKER_TOP_N
-    )
-    logger.info("Step 5: Complete.")
+    final_retriever = ensemble_retriever # Default to this if reranker is off
+
+    # 5. Conditionally create the reranker retriever
+    if USE_RERANKER:
+        print(">>> STEP 5: Creating reranker retriever (might download model)...")
+        final_retriever = create_reranker_retriever(
+            ensemble_retriever=ensemble_retriever,
+            model_name=config.RERANKER_MODEL_NAME,
+            top_n=config.RERANKER_TOP_N
+        )
+        print("<<< STEP 5: Complete.\n")
+    else:
+        print(">>> STEP 5: Skipping reranker.\n")
+
 
     # 6. Initialize the GenAI Agent
-    logger.info("Step 6: Initializing GenAI Agent...")
+    print(">>> STEP 6: Initializing GenAI Agent...")
     agent = GenAIAgent(
-        retriever=reranker_retriever,
+        retriever=final_retriever,
         llm_model_name=config.LLM_MODEL_NAME
     )
-    logger.info("Step 6: Complete.")
+    print("<<< STEP 6: Complete.\n")
     logger.info("--- Agent Initialization Complete ---")
 
 

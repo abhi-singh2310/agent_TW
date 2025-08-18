@@ -1,0 +1,378 @@
+Company  Reference  Manual  
+Internal  Use  –  Customer  Service  Team  
+ Version:  1.0  |  Date:  July  2025  
+ 
+Purpose:
+ 
+To
+ 
+assist
+ 
+support
+ 
+agents
+ 
+in
+ 
+responding
+ 
+to
+ 
+common
+ 
+customer
+ 
+queries
+ 
+around
+ 
+furniture
+ 
+assembly,
+ 
+returns,
+ 
+shipping,
+ 
+and
+ 
+product
+ 
+care.
+ 
+ 
+Assembly  
+Q:  Does  the  furniture  come  pre-assembled?  
+A:  Most  of  our  furniture  is  flat-packed  for  safe  shipping  and  requires  assembly.  Each  product  
+page
+ 
+includes
+ 
+information
+ 
+about
+ 
+assembly
+ 
+requirements.
+ 
+Q:  What  tools  are  needed?  
+A:  All  required  tools  (usually  an  Allen  key)  are  provided  unless  otherwise  specified.  For  more  
+complex
+ 
+items
+ 
+(e.g.
+ 
+modular
+ 
+sofas
+ 
+or
+ 
+beds),
+ 
+a
+ 
+standard
+ 
+Phillips-head
+ 
+screwdriver
+ 
+may
+ 
+be
+ 
+needed.
+ 
+Q:  Is  assembly  assistance  available?  
+A:  Yes.  We  offer  assembly  services  in  most  metro  areas  through  a  third-party  provider.  This  
+can
+ 
+be
+ 
+added
+ 
+at
+ 
+checkout
+ 
+or
+ 
+requested
+ 
+post-purchase
+ 
+by
+ 
+contacting
+ 
+support.
+ 
+Q:  What  if  parts  are  missing  or  damaged?  
+A:  Apologise  for  the  inconvenience,  and  direct  the  customer  to  contact  support  with:  
+●  Order  number  
+ ●  Part  number  (from  instruction  manual)  
+ ●  Photo  of  damaged  or  missing  part  
+ 
+We’ll
+ 
+ship
+ 
+replacements
+ 
+free
+ 
+of
+ 
+charge
+ 
+within
+ 
+3–5
+ 
+business
+ 
+days.
+ 
+ 
+ 
+Returns  &  Refunds  
+Q:  What  is  the  return  policy?  
+A:  Customers  can  return  most  items  within  30  days  of  delivery.  Items  must  be  unused,  in  
+original
+ 
+packaging,
+ 
+and
+ 
+in
+ 
+resellable
+ 
+condition.
+ 
+Q:  Are  returns  free?  
+A:  Return  shipping  is  free  for  faulty  or  damaged  items .  For  change-of-mind  returns,  we  
+offer
+ 
+a
+ 
+return
+ 
+label,
+ 
+but
+ 
+the
+ 
+cost
+ 
+of
+ 
+return
+ 
+shipping
+ 
+is
+ 
+deducted
+ 
+from
+ 
+the
+ 
+refund.
+ 
+Q:  How  do  I  start  a  return?  
+A:  Direct  the  customer  to  templeandwebster.com.au/returns  or  initiate  it  on  their  behalf  using  
+the
+ 
+order
+ 
+number
+ 
+and
+ 
+reason
+ 
+for
+ 
+return.
+ 
+Q:  How  long  do  refunds  take?  
+A:  Refunds  are  processed  within  5–7  business  days  after  the  item  is  received  and  
+inspected
+ 
+at
+ 
+our
+ 
+warehouse.
+ 
+Q:  Can  custom  or  made-to-order  furniture  be  returned?  
+A:  No,  custom/made-to-order  items  are  not  eligible  for  change-of-mind  returns ,  unless  
+faulty
+ 
+or
+ 
+damaged.
+ 
+ 
+Shipping  &  Delivery  
+Q:  Where  do  you  ship?  
+A:  We  ship  across  Australia ,  including  metro  and  regional  areas.  Delivery  times  and  costs  
+vary
+ 
+by
+ 
+postcode
+ 
+and
+ 
+product
+ 
+type.
+ 
+Q:  How  long  will  delivery  take?  
+A:  
+●  In-stock  items:  2–7  business  days  (metro)  
+ ●  Made-to-order  items:  6–10  weeks  
+ ●  Delivery  ETA  is  shown  at  checkout  and  in  the  order  confirmation  email.  
+ 
+Q:  How  do  I  track  my  order?  
+A:  Tracking  links  are  sent  via  email  once  items  are  dispatched.  Agents  can  provide  updates  
+using
+ 
+the
+ 
+internal
+ 
+order
+ 
+tracking
+ 
+tool.
+ 
+Q:  What  if  I  miss  my  delivery?  
+A:  For  small  parcels,  the  item  will  be  redirected  to  a  local  depot  or  post  office.  For  larger  
+items,
+ 
+the
+ 
+courier
+ 
+will
+ 
+contact
+ 
+the
+ 
+customer
+ 
+to
+ 
+reschedule.
+ 
+Q:  Can  I  schedule  a  delivery  date?  
+A:  For  large  items,  yes.  Customers  can  select  a  preferred  window  at  checkout  or  coordinate  
+with
+ 
+the
+ 
+courier
+ 
+after
+ 
+dispatch.
+ 
+ 
+Product  Care  &  Materials  
+Q:  How  do  I  care  for  my  wooden  furniture?  
+A:  
+●  Dust  regularly  with  a  soft  cloth.  
+ ●  Avoid  direct  sunlight  and  extreme  humidity.  
+ ●  Use  coasters  and  placemats  to  prevent  marks.  
+ ●  Apply  wood  polish  every  6–12  months.  
+ 
+Q:  What  about  fabric  sofas  and  upholstered  items?  
+A:  
+●  Vacuum  weekly  with  an  upholstery  brush.  
+ ●  Spot  clean  spills  immediately  with  a  damp  cloth.  
+ ●  For  tougher  stains,  use  a  fabric-safe  cleaner  or  consult  a  professional.  
+ ●  Rotate  cushions  regularly  to  maintain  shape  and  wear.  
+ 
+Q:  Are  your  products  pet-friendly  or  kid-safe?  
+A:  Many  of  our  products  are  designed  with  durability  in  mind.  Look  for  materials  like  
+performance
+ 
+fabric,
+ 
+scratch-resistant
+ 
+finishes,
+ 
+and
+ 
+rounded
+ 
+corners.
+ 
+For
+ 
+safety
+ 
+queries,
+ 
+always
+ 
+refer
+ 
+to
+ 
+the
+ 
+product
+ 
+safety
+ 
+section
+ 
+or
+ 
+user
+ 
+manual.
+ 
+Q:  Are  replacement  parts  or  fabric  covers  available?  
+A:  In  some  cases,  yes.  If  the  customer  needs  replacement  covers  or  components,  ask  for  
+the
+ 
+product
+ 
+name
+ 
+and
+ 
+order
+ 
+number,
+ 
+and
+ 
+escalate
+ 
+to
+ 
+the
+ 
+Parts
+ 
+&
+ 
+Warranty
+ 
+team.
+ 
+ 
