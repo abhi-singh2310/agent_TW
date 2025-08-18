@@ -22,11 +22,10 @@ VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db") # ChromaDB needs the pat
 
 # --- AI Model Configuration ---
 # Name of the local model to use for the embedding process.
-# Ensure this model is pulled in Ollama (e.g., `ollama pull mistral`).
 EMBEDDING_MODEL_NAME = "nomic-embed-text"
 
 # Name of the local model to use for the generation (chat) process.
-LLM_MODEL_NAME = "mistral:7b-instruct-q4_K_M"
+LLM_MODEL_NAME = "phi3:3.8b-mini-128k-instruct-q4_0"
 
 
 # --- Retriever Configuration ---

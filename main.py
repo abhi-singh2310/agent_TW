@@ -37,39 +37,49 @@ def initialize_agent():
     logger.info("--- Starting Agent Initialization ---")
 
     # 1. Load and split the document
-    # Chunks are only needed if the vector store doesn't exist yet.
-    # We load them first to pass them to the get_vector_store function if needed.
+    logger.info("Step 1: Loading and splitting PDF...")
     chunks = load_and_split_pdf(str(config.PDF_FILE_PATH))
+    logger.info("Step 1: Complete.")
 
     # 2. Initialize embedding model
+    logger.info("Step 2: Initializing embedding model...")
     embedding_model = create_embedding_model(model_name=config.EMBEDDING_MODEL_NAME)
+    logger.info("Step 2: Complete.")
 
     # 3. Get or create the vector store
+    logger.info("Step 3: Getting vector store...")
     vector_store = get_vector_store(
         chunks=chunks,
         embedding_model=embedding_model,
         persist_directory=config.VECTOR_STORE_PATH
     )
+    logger.info("Step 3: Complete.")
 
     # 4. Create the ensemble retriever
+    logger.info("Step 4: Creating ensemble retriever...")
     ensemble_retriever = create_retriever(
         vector_store=vector_store,
         chunks=chunks,
         top_k=config.RETRIEVER_TOP_K
     )
+    logger.info("Step 4: Complete.")
 
     # 5. Create the reranker retriever
+    logger.info("Step 5: Creating reranker retriever... (This may take a moment)")
     reranker_retriever = create_reranker_retriever(
         ensemble_retriever=ensemble_retriever,
         model_name=config.RERANKER_MODEL_NAME,
         top_n=config.RERANKER_TOP_N
     )
+    logger.info("Step 5: Complete.")
 
     # 6. Initialize the GenAI Agent
+    logger.info("Step 6: Initializing GenAI Agent...")
     agent = GenAIAgent(
         retriever=reranker_retriever,
         llm_model_name=config.LLM_MODEL_NAME
     )
+    logger.info("Step 6: Complete.")
     logger.info("--- Agent Initialization Complete ---")
 
 

@@ -1,43 +1,72 @@
 # app/services/loaders.py
 
-from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 from typing import List
 import logging
+import pypdf # Make sure pypdf is in your requirements.txt
+from app import config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def load_and_split_pdf(pdf_path: str) -> List[Document]:
+def _ensure_text_file_exists():
     """
-    Loads a PDF document from the given path and splits it into smaller chunks.
+    Checks if the text version of the PDF exists. If not, it creates it.
+    This is a one-time preprocessing step that runs automatically.
+    """
+    text_file_path = config.DATA_DIR / "faq_manual.txt"
+    pdf_file_path = config.PDF_FILE_PATH
 
-    This function uses PyPDFLoader to load the document page by page and then
-    RecursiveCharacterTextSplitter to split the text into chunks of a specified
-    size with some overlap. This overlap helps maintain context between chunks.
+    if text_file_path.exists():
+        logger.info(f"Text file already exists, skipping PDF conversion.")
+        return
 
-    Args:
-        pdf_path (str): The file path to the PDF document.
+    logger.info(f"Text file not found. Converting PDF to text...")
+    try:
+        with open(pdf_file_path, "rb") as pdf_file:
+            reader = pypdf.PdfReader(pdf_file)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
 
-    Returns:
-        List[Document]: A list of Document objects, where each object represents
-                        a chunk of the original document. The metadata of each
-                        chunk includes the source and page number.
+        with open(text_file_path, "w", encoding="utf-8") as text_file:
+            text_file.write(text)
+        logger.info(f"Successfully converted PDF to text: {text_file_path}")
+
+    except FileNotFoundError:
+        logger.error(f"Error: The source PDF file was not found at {pdf_file_path}")
+        raise
+    except Exception as e:
+        logger.error(f"An unexpected error occurred during PDF conversion: {e}")
+        raise
+
+
+def load_and_split_pdf(pdf_path: str = None) -> List[Document]:
+    """
+    Ensures a text version of the PDF exists, then loads and splits it into chunks.
     """
     try:
-        logger.info(f"Loading PDF from path: {pdf_path}")
-        loader = PyPDFLoader(pdf_path)
-        pages = loader.load()
-        logger.info(f"Successfully loaded {len(pages)} pages from the PDF.")
+        # Step 1: Make sure the .txt file is available
+        _ensure_text_file_exists()
 
+        # Step 2: Load from the guaranteed .txt file
+        text_file_path = config.DATA_DIR / "faq_manual.txt"
+        logger.info(f"Loading content from pre-processed text file: {text_file_path}")
+
+        with open(text_file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+
+        pages = [Document(page_content=text, metadata={"source": "faq_manual.txt", "page": 0})]
+        logger.info("Successfully loaded content.")
+
+        # Step 3: Split the document into chunks
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=750,  # The maximum size of a chunk (in characters)
-            chunk_overlap=250, # The number of characters to overlap between chunks
+            chunk_size=750,
+            chunk_overlap=250,
             length_function=len
         )
-
         logger.info("Splitting document into chunks...")
         chunks = text_splitter.split_documents(pages)
         logger.info(f"Document split into {len(chunks)} chunks.")
@@ -45,5 +74,5 @@ def load_and_split_pdf(pdf_path: str) -> List[Document]:
         return chunks
 
     except Exception as e:
-        logger.error(f"Failed to load and split PDF from {pdf_path}: {e}")
+        logger.error(f"Failed to load and split content: {e}")
         return []

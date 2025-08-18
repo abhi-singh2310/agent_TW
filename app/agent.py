@@ -38,45 +38,32 @@ class GenAIAgent:
         """
         # 1. Define the prompt template
         template = """
-            **Role:** You are a helpful assistant for a customer support team.
+            <|system|>
+            You are a helpful customer support assistant. Your task is to answer the user's question based ONLY on the provided context.
+            Follow the user's instructions and the examples below precisely.
+            </s>
+            <|user|>
+            CONTEXT:
+            [Context about returns: "Most items can be returned within 30 days. The customer is responsible for return shipping costs for change-of-mind returns. Custom-made furniture cannot be returned."]
 
-            **Task:** Your goal is to provide accurate and helpful answers to customer questions based *only* on the provided context. You will be given a few examples of how to answer questions.
+            QUESTION:
+            Can I return a custom-made sofa if I don't like it?
 
-            **Instructions:**
-            1.  **Follow the Examples:** Emulate the tone and style of the examples provided below.
-            2.  **Analyze the Context:** Carefully read the retrieved context before answering the new question.
-            3.  **Synthesize the Answer:** Formulate a clear and concise answer to the user's question using only the information from the context.
-            4.  **Constraints:**
-                * Do not use any information outside of the provided context.
-                * If the answer is not in the context, explicitly state: "I'm sorry, but I don't have enough information to answer that question."
-                * Keep your answer to a maximum of three sentences.
+            </s>
+            <|assistant|>
+            Relevant Information:
+            1. Custom-made furniture cannot be returned.
 
-            ---
-            **Examples:**
-
-            **Example 1:**
-            **Question:** What tools will I need for assembly?
-            [cite_start]**Answer:** All the tools you need, which is usually an Allen key, are provided in the box. [cite: 11] [cite_start]For some of our more complex items, like modular sofas or beds, you might also need a standard Phillips-head screwdriver. [cite: 12]
-
-            **Example 2:**
-            **Question:** Can I return a sofa if I change my mind?
-            [cite_start]**Answer:** You can return most items within 30 days of delivery, as long as they are unused and in their original packaging. [cite: 24, 25] [cite_start]However, for change-of-mind returns, the cost of the return shipping will be deducted from your refund. [cite: 28]
-
-            **Example 3:**
-            **Question:** How do I take care of my new wooden table?
-            [cite_start]**Answer:** To care for your wooden furniture, you should dust it regularly with a soft cloth and avoid placing it in direct sunlight. [cite: 56, 57] [cite_start]It's also a good idea to use coasters to prevent marks and apply wood polish every 6 to 12 months. [cite: 58, 59]
-
-            ---
-
-            **New Task:**
-
-            **Context:**
+            Final Answer:
+            I'm sorry, but custom-made furniture, including sofas, cannot be returned for a change of mind.
+            <|user|>
+            CONTEXT:
             {context}
 
-            **Question:**
+            QUESTION:
             {question}
-
-            **Answer:**
+            </s>
+            <|assistant|>
         """
         prompt = PromptTemplate.from_template(template)
 
@@ -127,21 +114,35 @@ class GenAIAgent:
 
     def ask(self, query: str) -> Dict[str, Any]:
         """
-        Executes a query against the RAG chain and returns a single result.
+        Executes a query against the RAG chain, parses the output,
+        and returns the final answer.
         """
         logger.info(f"Received query: {query}")
-        
+
         # Use .invoke() which returns the final result
         result = self.rag_chain.invoke(query)
-        
+        raw_answer = result.get("answer", "")
+
+        # --- Start of New Parsing Logic ---
+        # By default, the answer is the full raw output
+        final_answer = raw_answer
+
+        # Check if our "Final Answer:" marker is in the text
+        if "Final Answer:" in raw_answer:
+            # Split the string by the marker and take the second part
+            parts = raw_answer.split("Final Answer:", 1)
+            if len(parts) > 1:
+                # .strip() removes any leading/trailing whitespace
+                final_answer = parts[1].strip()
+
         # Format the sources from the context
         source_docs = result.get("context", [])
         formatted_sources = self._format_sources(source_docs)
-        
-        # Combine the answer and sources into a single response
+
+        # Combine the parsed answer and sources into a single response
         response = {
-            "answer": result.get("answer"),
+            "answer": final_answer, # Use the clean, parsed answer
             "sources": formatted_sources
         }
-        
+
         return response
