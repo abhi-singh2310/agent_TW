@@ -26,8 +26,8 @@ LLM_MODEL_NAME = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 # --- Retriever Configuration ---
-RETRIEVER_TOP_K = 15
+RETRIEVER_TOP_K = 20
 
 # --- Reranker Configuration ---
-RERANKER_TOP_N = 3
+RERANKER_TOP_N = 4
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"

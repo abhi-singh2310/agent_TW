@@ -8,7 +8,7 @@ from typing import List, Sequence
 from langchain.schema import Document, BaseRetriever
 from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
 from langchain_community.retrievers import BM25Retriever
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings # Use FastEmbed
 from langchain.retrievers.document_compressors.base import BaseDocumentCompressor
 
@@ -101,7 +101,7 @@ def create_retriever(vector_store: Chroma, chunks: List[Document], top_k: int = 
     # 3. Create the ensemble retriever to combine both
     ensemble_retriever = EnsembleRetriever(
         retrievers=[semantic_retriever, bm25_retriever],
-        weights=[0.4, 0.6]  # Adjust weights to balance between semantic and keyword search
+        weights=[0.6, 0.4]  # Adjust weights to balance between semantic and keyword search
     )
 
     return ensemble_retriever

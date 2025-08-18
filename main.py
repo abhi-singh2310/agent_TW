@@ -1,135 +1,132 @@
-# app/agent.py
+# main.py
 
 import logging
-from typing import Dict, Any, List
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 
-# --- MODIFIED: Import HuggingFaceEndpoint instead of ChatOllama ---
-from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
-from langchain.prompts import PromptTemplate
-from langchain.schema.runnable import RunnableParallel, RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
-from langchain.schema import BaseRetriever, Document
-from app import config # Import the config module to access the API key
+# Import configurations and core components
+from app import config
+from app.agent import GenAIAgent
+from app.services.loaders import load_and_split_pdf
+from app.services.vector_store import (
+    create_embedding_model,
+    get_vector_store,
+    create_retriever,
+    create_reranker_retriever,
+)
 
-# Configure logging
+# --- Basic Configuration ---
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class GenAIAgent:
+# --- Global Agent Initialization ---
+agent = None
+USE_RERANKER = True # Set to False to disable the reranker for a speed test
+
+def initialize_agent():
     """
-    The core agent class that orchestrates the RAG pipeline.
+    Initializes all components required for the GenAI agent.
+    This includes loading data, creating embeddings, the vector store,
+    the retriever, and finally the agent itself.
     """
-    def __init__(self, retriever: BaseRetriever, llm_model_name: str):
-        """
-        Initializes the agent with a retriever and the specified LLM.
-        """
-        self.retriever = retriever
-        self.llm_model_name = llm_model_name
-        self.rag_chain = self._build_rag_chain()
-        logger.info(f"GenAIAgent initialized with retriever and LLM: {llm_model_name}")
+    global agent
+    if agent is not None:
+        logger.info("Agent is already initialized.")
+        return
 
-    def _build_rag_chain(self):
-        """
-        Builds the complete RAG chain using LangChain Expression Language (LCEL).
-        """
-        # 1. Define the prompt template (This remains unchanged)
-        template = """
-            <|system|>
-            You are a helpful customer support assistant. Your task is to answer the user's question based ONLY on the provided context.
-            Follow the user's instructions and the examples below precisely.
-            </s>
-            <|user|>
-            CONTEXT:
-            [Context about returns: "Most items can be returned within 30 days. The customer is responsible for return shipping costs for change-of-mind returns. Custom-made furniture cannot be returned."]
+    logger.info("--- Starting Agent Initialization ---")
 
-            QUESTION:
-            Can I return a custom-made sofa if I don't like it?
+    # 1. Load and split the document
+    print(">>> STEP 1: Loading and splitting PDF...")
+    chunks = load_and_split_pdf()
+    print("<<< STEP 1: Complete.\n")
 
-            </s>
-            <|assistant|>
-            Relevant Information:
-            1. Custom-made furniture cannot be returned.
+    # 2. Initialize embedding model
+    print(">>> STEP 2: Initializing embedding model (might download model)...")
+    embedding_model = create_embedding_model(model_name=config.EMBEDDING_MODEL_NAME)
+    print("<<< STEP 2: Complete.\n")
 
-            Final Answer:
-            I'm sorry, but custom-made furniture, including sofas, cannot be returned for a change of mind.
-            <|user|>
-            CONTEXT:
-            {context}
+    # 3. Get or create the vector store
+    print(">>> STEP 3: Getting vector store (might re-create embeddings)...")
+    vector_store = get_vector_store(
+        chunks=chunks,
+        embedding_model=embedding_model,
+        persist_directory=config.VECTOR_STORE_PATH
+    )
+    print("<<< STEP 3: Complete.\n")
 
-            QUESTION:
-            {question}
-            </s>
-            <|assistant|>
-        """
-        prompt = PromptTemplate.from_template(template)
+    # 4. Create the ensemble retriever
+    print(">>> STEP 4: Creating ensemble retriever...")
+    ensemble_retriever = create_retriever(
+        vector_store=vector_store,
+        chunks=chunks,
+        top_k=config.RETRIEVER_TOP_K
+    )
+    print("<<< STEP 4: Complete.\n")
 
-        # --- MODIFIED: Initialize the Hugging Face LLM ---
-        # 2. Initialize the LLM using HuggingFaceEndpoint instead of ChatOllama
-        llm = HuggingFaceEndpoint(
-            repo_id=self.llm_model_name,
-            huggingfacehub_api_token=config.HUGGINGFACE_API_KEY,
-            temperature=0.1,
-            max_new_tokens=1024, # Controls the maximum length of the response
+    final_retriever = ensemble_retriever # Default to this if reranker is off
+
+    # 5. Conditionally create the reranker retriever
+    if USE_RERANKER:
+        print(">>> STEP 5: Creating reranker retriever (might download model)...")
+        final_retriever = create_reranker_retriever(
+            ensemble_retriever=ensemble_retriever,
+            model_name=config.RERANKER_MODEL_NAME,
+            top_n=config.RERANKER_TOP_N
         )
+        print("<<< STEP 5: Complete.\n")
+    else:
+        print(">>> STEP 5: Skipping reranker.\n")
 
-        # 3. Construct the RAG chain (This remains unchanged)
-        rag_chain_from_docs = (
-            RunnablePassthrough.assign(
-                context=(lambda x: self._format_docs(x["context"]))
-            )
-            | prompt
-            | llm
-            | StrOutputParser()
-        )
 
-        rag_chain_with_source = RunnableParallel(
-            {"context": self.retriever, "question": RunnablePassthrough()}
-        ).assign(answer=rag_chain_from_docs)
+    # 6. Initialize the GenAI Agent
+    print(">>> STEP 6: Initializing GenAI Agent...")
+    agent = GenAIAgent(
+        retriever=final_retriever,
+        llm_model_name=config.LLM_MODEL_NAME
+    )
+    print("<<< STEP 6: Complete.\n")
+    logger.info("--- Agent Initialization Complete ---")
 
-        return rag_chain_with_source
 
-    # ... The rest of your methods (_format_docs, _format_sources, ask) are unchanged ...
-    @staticmethod
-    def _format_docs(docs: List[Document]) -> str:
-        """
-        Formats the retrieved documents into a single string for the prompt.
-        """
-        return "\n\n".join(doc.page_content for doc in docs)
-    
-    @staticmethod
-    def _format_sources(docs: List[Document]) -> List[Dict[str, Any]]:
-        """
-        Formats the source documents into a structured list for the final output.
-        """
-        if not docs:
-            return []
-        
-        sources = [
-            {
-                "source": doc.metadata.get('source', 'unknown'),
-                "page": doc.metadata.get('page', 'unknown')
-            }
-            for doc in docs
-        ]
-        unique_sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
-        return sorted(unique_sources, key=lambda x: x.get('page', 0))
+# --- Flask Application Setup ---
+app = Flask(__name__, static_folder='static', static_url_path='')
+CORS(app) # Enable Cross-Origin Resource Sharing for the frontend
 
-    def ask(self, query: str) -> Dict[str, Any]:
-        """
-        Executes a query against the RAG chain and returns the final answer.
-        """
-        logger.info(f"Received query: {query}")
-        result = self.rag_chain.invoke(query)
-        raw_answer = result.get("answer", "")
-        final_answer = raw_answer
-        if "Final Answer:" in raw_answer:
-            parts = raw_answer.split("Final Answer:", 1)
-            if len(parts) > 1:
-                final_answer = parts[1].strip()
-        source_docs = result.get("context", [])
-        formatted_sources = self._format_sources(source_docs)
-        response = {
-            "answer": final_answer,
-            "sources": formatted_sources
-        }
-        return response
+# --- API Endpoints ---
+@app.route('/')
+def serve_index():
+    """Serves the main HTML page for the demo."""
+    return send_from_directory(app.static_folder, 'index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask_agent():
+    """
+    Handles questions to the agent and returns a single JSON response.
+    """
+    if not agent:
+        return jsonify({"error": "Agent not initialized"}), 503
+
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+
+    data = request.get_json()
+    query = data.get('query')
+
+    if not query:
+        return jsonify({"error": "Missing 'query' in request body"}), 400
+
+    try:
+        # Get the complete response from the agent
+        response = agent.ask(query)
+        return jsonify(response)
+    except Exception as e:
+        logger.error(f"An error occurred while processing the query: {e}")
+        return jsonify({"error": "An internal error occurred."}), 500
+
+
+# --- Main Execution ---
+if __name__ == '__main__':
+    initialize_agent()
+    # Note: debug=True is for development. In production, use a proper WSGI server like Gunicorn.
+    app.run(host='127.0.0.1', port=5000, debug=True)
