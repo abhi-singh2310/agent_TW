@@ -1,15 +1,15 @@
 # app/agent.py
 
 import logging
-import json
 from typing import Dict, Any, List
-from operator import itemgetter
 
-from langchain_community.chat_models import ChatOllama
-from langchain.prompts import ChatPromptTemplate, PromptTemplate
+# --- MODIFIED: Import HuggingFaceEndpoint instead of ChatOllama ---
+from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
+from langchain.prompts import PromptTemplate
 from langchain.schema.runnable import RunnableParallel, RunnablePassthrough
 from langchain.schema.output_parser import StrOutputParser
 from langchain.schema import BaseRetriever, Document
+from app import config # Import the config module to access the API key
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,10 +22,6 @@ class GenAIAgent:
     def __init__(self, retriever: BaseRetriever, llm_model_name: str):
         """
         Initializes the agent with a retriever and the specified LLM.
-
-        Args:
-            retriever (BaseRetriever): The document retriever instance.
-            llm_model_name (str): The name of the Ollama model to use for generation.
         """
         self.retriever = retriever
         self.llm_model_name = llm_model_name
@@ -36,7 +32,7 @@ class GenAIAgent:
         """
         Builds the complete RAG chain using LangChain Expression Language (LCEL).
         """
-        # 1. Define the prompt template
+        # 1. Define the prompt template (This remains unchanged)
         template = """
             <|system|>
             You are a helpful customer support assistant. Your task is to answer the user's question based ONLY on the provided context.
@@ -67,10 +63,16 @@ class GenAIAgent:
         """
         prompt = PromptTemplate.from_template(template)
 
-        # 2. Initialize the LLM
-        llm = ChatOllama(model=self.llm_model_name, temperature=0.1)
+        # --- MODIFIED: Initialize the Hugging Face LLM ---
+        # 2. Initialize the LLM using HuggingFaceEndpoint instead of ChatOllama
+        llm = HuggingFaceEndpoint(
+            repo_id=self.llm_model_name,
+            huggingfacehub_api_token=config.HUGGINGFACE_API_KEY,
+            temperature=0.1,
+            max_new_tokens=512, # Controls the maximum length of the response
+        )
 
-        # 3. Construct the RAG chain
+        # 3. Construct the RAG chain (This remains unchanged)
         rag_chain_from_docs = (
             RunnablePassthrough.assign(
                 context=(lambda x: self._format_docs(x["context"]))
@@ -86,6 +88,7 @@ class GenAIAgent:
 
         return rag_chain_with_source
 
+    # ... The rest of your methods (_format_docs, _format_sources, ask) are unchanged ...
     @staticmethod
     def _format_docs(docs: List[Document]) -> str:
         """
@@ -108,41 +111,43 @@ class GenAIAgent:
             }
             for doc in docs
         ]
-        # Remove duplicate sources
         unique_sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
         return sorted(unique_sources, key=lambda x: x.get('page', 0))
 
     def ask(self, query: str) -> Dict[str, Any]:
         """
-        Executes a query against the RAG chain, parses the output,
-        and returns the final answer.
+        Executes a query against the RAG chain and returns the final answer.
         """
         logger.info(f"Received query: {query}")
+        
+        # --- ADDED: Debugging logs and error handling ---
+        try:
+            logger.info("Invoking RAG chain...")
+            result = self.rag_chain.invoke(query)
+            logger.info("RAG chain invocation complete.")
 
-        # Use .invoke() which returns the final result
-        result = self.rag_chain.invoke(query)
-        raw_answer = result.get("answer", "")
+            raw_answer = result.get("answer", "")
+            final_answer = raw_answer
+            if "Final Answer:" in raw_answer:
+                parts = raw_answer.split("Final Answer:", 1)
+                if len(parts) > 1:
+                    final_answer = parts[1].strip()
+            
+            source_docs = result.get("context", [])
+            formatted_sources = self._format_sources(source_docs)
 
-        # --- Start of New Parsing Logic ---
-        # By default, the answer is the full raw output
-        final_answer = raw_answer
-
-        # Check if our "Final Answer:" marker is in the text
-        if "Final Answer:" in raw_answer:
-            # Split the string by the marker and take the second part
-            parts = raw_answer.split("Final Answer:", 1)
-            if len(parts) > 1:
-                # .strip() removes any leading/trailing whitespace
-                final_answer = parts[1].strip()
-
-        # Format the sources from the context
-        source_docs = result.get("context", [])
-        formatted_sources = self._format_sources(source_docs)
-
-        # Combine the parsed answer and sources into a single response
-        response = {
-            "answer": final_answer, # Use the clean, parsed answer
-            "sources": formatted_sources
-        }
-
-        return response
+            response = {
+                "answer": final_answer,
+                "sources": formatted_sources
+            }
+            logger.info("Successfully processed query and generated response.")
+            return response
+            
+        except Exception as e:
+            # This will catch errors from the API call (e.g., authentication, timeouts)
+            # and log them to the server's terminal with a full traceback.
+            logger.error(f"An error occurred during RAG chain invocation: {e}", exc_info=True)
+            return {
+                "answer": "Sorry, I encountered an error. Please check the server logs for details.",
+                "sources": []
+            }

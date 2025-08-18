@@ -11,3 +11,5 @@ rank_bm25
 sentence-transformers
 torch
 numpy<2.0
+huggingface-hub
+python-dotenv
