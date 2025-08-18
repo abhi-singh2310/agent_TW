@@ -71,7 +71,7 @@ The RAG pipeline is implemented as follows:
     source venv/bin/activate
     ```
 
-3.  **Install the dependencies:**
+3.  **Install the dependencies (upgrade pip to ensure completion):**
     ```bash
     python3 -m pip install --upgrade pip
     pip install -r requirements.txt
@@ -99,12 +99,12 @@ The RAG pipeline is implemented as follows:
     Open your web browser and navigate to `http://127.0.0.1:5000`.
 
 3.  **Ask a question:**
-    Type a question into the chat interface and press Enter. The agent will generate an answer and provide the sources it used.
+    Type or choose a question in the chat interface and press Enter. The agent will generate an answer and provide the sources it used.
 
 ## Limitations
 
 *   **Knowledge Cut-off:** The agent's knowledge is limited to the content of the `faq_manual.pdf` file. It cannot answer questions about topics not covered in this document.
 *   **Scalability:** The current implementation uses a local vector store and runs on a single machine. For a production environment with a large number of users, it would be necessary to use a more scalable, cloud-based vector store and deploy the application on a more robust infrastructure.
 *   **Model Dependencies:** The performance of the agent is dependent on the quality of the chosen embedding, reranker, and language models. The current models were chosen as good open-source options, but other models may provide better performance.
-*   **Local vs Cloud LLM Consideration:** For this task, I initially considered the use of a locally-run LLM such as mistral:7b or phi3:mini but ran into significant performance issues due to hardware limitations of my Macbook Pro. For this reason, I pivoted to a cloud instance with the well-known huggingface set of models that enabled fast and effective calls to be made.
+*   **Local vs Cloud LLM Consideration:** For this task, I initially considered the use of a locally-run LLM using Ollama such as mistral:7b or phi3:mini but ran into significant performance issues due to hardware limitations of my Macbook Pro. For this reason, I pivoted to a cloud instance with the well-known huggingface suite of models that enabled fast and effective calls to be made.
 *   **Accuracy vs Speed:** It was a battle to identify where the parameters could be configured to facilitate fast but accurate calls to the LLM. Changes were tested between different chunking sizes, output tokens, retrieval and encoding strategies as well as persistent memory options. The current selection was identified to be working from a trial and error approach.
