@@ -17,7 +17,15 @@ VECTOR_STORE_DIR = BASE_DIR / "db"
 VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db")
 
 # --- AI Model Configuration ---
+<<<<<<< HEAD
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+=======
+# Name of the local model to use for the embedding process.
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
+
+# Name of the local model to use for the generation (chat) process.
+LLM_MODEL_NAME = "phi3:3.8b-mini-128k-instruct-q4_0"
+>>>>>>> 08327a5ccbe1ee5d7e9cefec8c70b38b3874dad7
 
 # --- MODIFIED: Hugging Face LLM Configuration ---
 # Replace the local model name with a free model from the Hugging Face Hub.
