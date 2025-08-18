@@ -17,26 +17,17 @@ VECTOR_STORE_DIR = BASE_DIR / "db"
 VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db")
 
 # --- AI Model Configuration ---
-<<<<<<< HEAD
-EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
-=======
 # Name of the local model to use for the embedding process.
 EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
-# Name of the local model to use for the generation (chat) process.
-LLM_MODEL_NAME = "phi3:3.8b-mini-128k-instruct-q4_0"
->>>>>>> 08327a5ccbe1ee5d7e9cefec8c70b38b3874dad7
-
-# --- MODIFIED: Hugging Face LLM Configuration ---
-# Replace the local model name with a free model from the Hugging Face Hub.
-# "mistralai/Mixtral-8x7B-Instruct-v0.1" is a powerful free option.
+# --- Hugging Face LLM Configuration ---
 LLM_MODEL_NAME = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 # Get the API key from the environment variables you just set up.
 HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACEHUB_API_TOKEN")
 
 # --- Retriever Configuration ---
-RETRIEVER_TOP_K = 15
+RETRIEVER_TOP_K = 20
 
 # --- Reranker Configuration ---
-RERANKER_TOP_N = 3
+RERANKER_TOP_N = 4
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"

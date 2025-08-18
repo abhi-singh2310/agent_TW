@@ -1,3 +1,4 @@
+--- PAGE 1 ---
 Company  Reference  Manual  
 Internal  Use  –  Customer  Service  Team  
  Version:  1.0  |  Date:  July  2025  
@@ -139,6 +140,8 @@ days.
  
  
 Returns  &  Refunds  
+
+--- PAGE 2 ---
 Q:  What  is  the  return  policy?  
 A:  Customers  can  return  most  items  within  30  days  of  delivery.  Items  must  be  unused,  in  
 original
@@ -242,6 +245,8 @@ A:
  ●  Delivery  ETA  is  shown  at  checkout  and  in  the  order  confirmation  email.  
  
 Q:  How  do  I  track  my  order?  
+
+--- PAGE 3 ---
 A:  Tracking  links  are  sent  via  email  once  items  are  dispatched.  Agents  can  provide  updates  
 using
  
@@ -345,6 +350,8 @@ user
  
 manual.
  
+
+--- PAGE 4 ---
 Q:  Are  replacement  parts  or  fabric  covers  available?  
 A:  In  some  cases,  yes.  If  the  customer  needs  replacement  covers  or  components,  ask  for  
 the
