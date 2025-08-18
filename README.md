@@ -6,7 +6,7 @@ This project contains a GenAI-powered agent designed to assist customer support 
 
 The agent ingests a knowledge base (in this case, a PDF containing FAQs), and provides a simple web interface for users to ask questions in natural language. The agent then generates a concise, context-aware answer and, crucially, cites the sources from the original document, including the page number.
 
-This solution is built using Python (back-end), simple JS and CSS (front-end) and a stack of open-source tools, primarily the LangChain framework. GenAI (Gemini Pro) was used to workshop, build, test and debug. This was an intentional choice to build something quickly and efficiently.
+This solution is built using Python (back-end), simple JS and CSS (front-end) and a stack of open-source tools, primarily the LangChain framework. GenAI (Gemini 2.5 Pro) was used to workshop, build, test and debug. This was an intentional choice to build something quickly and efficiently.
 
 ## Approach
 
