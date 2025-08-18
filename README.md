@@ -85,6 +85,8 @@ The RAG pipeline is implemented as follows:
     HUGGINGFACE_API_KEY="your_api_key_here"
     ```
 
+**Note**: Ensure the faq_manual.pdf file is in the /data folder.
+
 ## How to Run
 
 1.  **Start the Flask application:**
