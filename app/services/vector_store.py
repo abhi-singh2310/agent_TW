@@ -97,7 +97,7 @@ def create_retriever(vector_store: Chroma, chunks: List[Document], top_k: int = 
     # 3. Create the ensemble retriever
     ensemble_retriever = EnsembleRetriever(
         retrievers=[semantic_retriever, bm25_retriever],
-        weights=[0.5, 0.5]  # You can tune these weights
+        weights=[0.4, 0.6]  # You can tune these weights
     )
     
     return ensemble_retriever
