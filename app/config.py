@@ -22,7 +22,7 @@ VECTOR_STORE_PATH = str(VECTOR_STORE_DIR / "chroma_db") # ChromaDB needs the pat
 
 # --- AI Model Configuration ---
 # Name of the local model to use for the embedding process.
-EMBEDDING_MODEL_NAME = "nomic-embed-text"
+EMBEDDING_MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 # Name of the local model to use for the generation (chat) process.
 LLM_MODEL_NAME = "phi3:3.8b-mini-128k-instruct-q4_0"
