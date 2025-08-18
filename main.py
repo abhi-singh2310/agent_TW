@@ -112,13 +112,14 @@ def ask_agent():
 
     data = request.get_json()
     query = data.get('query')
+    history = data.get('history') # Get the history from the request
 
     if not query:
         return jsonify({"error": "Missing 'query' in request body"}), 400
 
     try:
         # Get the complete response from the agent
-        response = agent.ask(query)
+        response = agent.ask(query, history=history) # Pass history to the agent
         return jsonify(response)
     except Exception as e:
         logger.error(f"An error occurred while processing the query: {e}")

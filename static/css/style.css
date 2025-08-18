@@ -1,0 +1,268 @@
+/* --- Root Variables and Base Styles --- */
+:root {
+    --brand-primary: #58595b; /* Dark gray from the logo text */
+    --brand-core: #94bcba; /* New core brand color from Temple & Webster */
+    --brand-tertiary: #df4444; /* The bright red from the "Warehouse Sale" banner */
+    --brand-text: #616465; /* New font and text color */
+    --brand-light-gray: #f2f2f2;
+    --brand-mid-gray: #CCCCCC;
+    --brand-dark-gray: #4A4A4A;
+    --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+body {
+    font-family: var(--font-stack);
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+    color: var(--brand-text); /* Applied new text color */
+    overflow: hidden; /* Prevents scrollbars on the main page */
+}
+
+/* --- Background Image --- */
+.background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/tw-homepage-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(0);
+    transition: filter 0.5s ease;
+}
+
+/* --- Chat Icon and Pulsing Animation --- */
+.chat-widget-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+}
+
+.chat-icon-pulse {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.chat-icon {
+    width: 70px;
+    height: 70px;
+    background-color: var(--brand-primary); /* Changed to darker brand color */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease;
+    z-index: 2;
+}
+
+.chat-icon img {
+    width: 42px; /* Adjusted size to be larger */
+    height: 42px;
+}
+
+.chat-icon:hover {
+    transform: scale(1.05);
+}
+
+.chat-icon-pulse::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--brand-primary); /* Changed to darker brand color */
+    opacity: 0.5;
+    animation: pulse 2s infinite;
+    z-index: 1;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+}
+
+/* --- Chat Overlay and Box --- */
+.chat-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Dim background */
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    transition: opacity 0.5s ease;
+    opacity: 0;
+}
+
+.chat-box {
+    width: 90%;
+    max-width: 450px;
+    height: 90vh;
+    max-height: 650px;
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(20px);
+    transition: transform 0.5s ease;
+}
+
+.chat-overlay.visible {
+    display: flex;
+    opacity: 1;
+}
+
+.chat-overlay.visible .chat-box {
+    transform: translateY(0);
+}
+
+/* --- Chat Header --- */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: var(--brand-core); /* Applied new core brand color */
+    color: white;
+    border-bottom: 1px solid var(--brand-dark-gray);
+}
+
+.chat-title {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--brand-text);
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: var(--brand-text);
+    font-size: 2em;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* --- Chat Messages Area --- */
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- Message Styling --- */
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.message.user {
+    align-self: flex-end;
+    background-color: var(--brand-core); /* Applied new core brand color */
+    color: white; /* Kept contrast color for readability */
+    border-radius: 15px 15px 0 15px;
+}
+
+.message.bot {
+    align-self: flex-start;
+    background-color: var(--brand-light-gray);
+    color: var(--brand-text); /* Applied new text color */
+    border-radius: 15px 15px 15px 0;
+}
+
+.message-text {
+    padding: 10px 15px 15px; /* Added padding to the bottom */
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.message-sources {
+    font-style: italic;
+    font-size: 0.8em;
+    color: var(--brand-dark-gray); /* Darker color for readability */
+    margin-top: -10px; /* Reduced the gap from the message-text */
+    padding: 0 15px 10px; /* Add padding to bottom */
+}
+
+/* --- Input Area --- */
+.chat-input-area {
+    display: flex;
+    padding: 15px 20px;
+    border-top: 1px solid var(--brand-mid-gray);
+    background-color: var(--brand-light-gray);
+}
+
+.chat-input {
+    flex-grow: 1;
+    border: 1px solid var(--brand-mid-gray);
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+    outline: none;
+    color: var(--brand-text); /* Applied new text color */
+}
+
+.chat-input:focus {
+    border-color: var(--brand-core);
+}
+
+.send-btn {
+    margin-left: 10px;
+    background-color: var(--brand-core); /* Applied new core brand color */
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 1em;
+}
+
+.send-btn:hover {
+    background-color: #7a9c9b;
+}
+
+/* Updated style for example question bubbles */
+.example-query-btn {
+    background-color: var(--brand-primary);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 12px;
+    margin: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9em;
+}
+
+.example-query-btn:hover {
+    background-color: #444546;
+}

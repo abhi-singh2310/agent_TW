@@ -79,8 +79,8 @@ def load_and_split_pdf() -> List[Document]:
 
         # Step 3: Split the documents into chunks
         text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=750,
-            chunk_overlap=250,
+            chunk_size=400,
+            chunk_overlap=100,
             length_function=len
         )
         logger.info("Splitting document into chunks...")
