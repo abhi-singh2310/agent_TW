@@ -11,26 +11,34 @@ function addMessage(sender, text, sources, save = true) {
     messageDiv.appendChild(messageText);
 
     if (sources && sources.length > 0) {
-        // Group sources by file name
-        const sourcesByFile = sources.reduce((acc, current) => {
-            const fileName = current.source;
-            if (!acc[fileName]) {
-                acc[fileName] = [];
-            }
-            acc[fileName].push(`Page ${current.page}`);
-            return acc;
-        }, {});
-
-        // Format the sources string
         const sourcesDiv = document.createElement('div');
         sourcesDiv.classList.add('message-sources');
-
-        let sourceString = "Sources:\n";
-        for (const [fileName, pages] of Object.entries(sourcesByFile)) {
-            sourceString += `- ${fileName} | Location: ${pages.join(', ')}\n`;
-        }
         
-        sourcesDiv.textContent = sourceString;
+        const sourcesTitle = document.createElement('div');
+        sourcesTitle.classList.add('sources-title');
+        sourcesTitle.textContent = "Sources:";
+        sourcesDiv.appendChild(sourcesTitle);
+        
+        sources.forEach(source => {
+            const sourceItem = document.createElement('div');
+            sourceItem.classList.add('source-item');
+            
+            const sourceRef = document.createElement('div');
+            sourceRef.classList.add('source-reference');
+            sourceRef.textContent = `- ${source.source} | Page ${source.page}`;
+            sourceItem.appendChild(sourceRef);
+            
+            // Add quote if available
+            if (source.quote && source.quote.trim()) {
+                const quote = document.createElement('div');
+                quote.classList.add('source-quote');
+                quote.textContent = `"${source.quote}"`;
+                sourceItem.appendChild(quote);
+            }
+            
+            sourcesDiv.appendChild(sourceItem);
+        });
+        
         messageDiv.appendChild(sourcesDiv);
     }
     
@@ -162,26 +170,35 @@ function loadChatHistory() {
             messageDiv.appendChild(messageText);
 
             if (msg.sources && msg.sources.length > 0) {
-                const sourceDiv = document.createElement('div');
-                sourceDiv.classList.add('message-sources');
-
-                // Group sources by file name
-                const sourcesByFile = msg.sources.reduce((acc, current) => {
-                    const fileName = current.source;
-                    if (!acc[fileName]) {
-                        acc[fileName] = [];
+                const sourcesDiv = document.createElement('div');
+                sourcesDiv.classList.add('message-sources');
+                
+                const sourcesTitle = document.createElement('div');
+                sourcesTitle.classList.add('sources-title');
+                sourcesTitle.textContent = "Sources:";
+                sourcesDiv.appendChild(sourcesTitle);
+                
+                msg.sources.forEach(source => {
+                    const sourceItem = document.createElement('div');
+                    sourceItem.classList.add('source-item');
+                    
+                    const sourceRef = document.createElement('div');
+                    sourceRef.classList.add('source-reference');
+                    sourceRef.textContent = `- ${source.source} | Page ${source.page}`;
+                    sourceItem.appendChild(sourceRef);
+                    
+                    // Add quote if available (for newer messages)
+                    if (source.quote && source.quote.trim()) {
+                        const quote = document.createElement('div');
+                        quote.classList.add('source-quote');
+                        quote.textContent = `"${source.quote}"`;
+                        sourceItem.appendChild(quote);
                     }
-                    acc[fileName].push(`Page ${current.page}`);
-                    return acc;
-                }, {});
-
-                let sourceString = "Sources:\n";
-                for (const [fileName, pages] of Object.entries(sourcesByFile)) {
-                    sourceString += `- ${fileName} | Location: ${pages.join(', ')}\n`;
-                }
-
-                sourceDiv.textContent = sourceString;
-                messageDiv.appendChild(sourceDiv);
+                    
+                    sourcesDiv.appendChild(sourceItem);
+                });
+                
+                messageDiv.appendChild(sourcesDiv);
             }
             chatMessages.appendChild(messageDiv);
         });

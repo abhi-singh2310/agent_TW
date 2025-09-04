@@ -37,6 +37,35 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _clean_extracted_text(text: str) -> str:
+    """
+    Cleans and normalises extracted PDF text to preserve Q&A structure.
+    
+    Args:
+        text (str): Raw extracted PDF text.
+        
+    Returns:
+        str: Cleaned text with proper Q&A formatting.
+    """
+    # Fix excessive spacing issues from PDF extraction
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Restore proper line breaks for Q&A structure
+    text = re.sub(r'\s*Q:\s*', '\n\nQ: ', text)
+    text = re.sub(r'\s*A:\s*', '\nA: ', text)
+    
+    # Fix bullet point formatting
+    text = re.sub(r'\s*●\s*', '\n● ', text)
+    
+    # Clean up section headers
+    text = re.sub(r'\s*(Assembly|Returns & Refunds|Shipping & Delivery|Product Care & Materials)\s*', '\n\n\1\n', text)
+    
+    # Remove excessive newlines
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    
+    return text.strip()
+
+
 def _ensure_text_file_exists():
     """
     Checks if the structured text version of the PDF exists. If not, it
@@ -62,16 +91,17 @@ def _ensure_text_file_exists():
         with open(pdf_file_path, "rb") as pdf_file:
             reader = pypdf.PdfReader(pdf_file)
             full_text = []
-            # We loop through each page to extract its text and prepend a
-            # page number marker. This is the key to preserving the source.
+            # Extract text from each page and apply cleaning
             for i, page in enumerate(reader.pages):
                 page_text = page.extract_text()
                 if page_text:
-                    full_text.append(f"--- PAGE {i + 1} ---\n{page_text}")
+                    # Clean the extracted text to preserve Q&A structure
+                    cleaned_text = _clean_extracted_text(page_text)
+                    full_text.append(f"--- PAGE {i + 1} ---\n{cleaned_text}")
 
         with open(text_file_path, "w", encoding="utf-8") as text_file:
             text_file.write("\n\n".join(full_text))
-        logger.info("Successfully converted PDF to structured text: %s",
+        logger.info("Successfully converted PDF to clean structured text: %s",
                     text_file_path)
 
     except FileNotFoundError:
@@ -127,14 +157,17 @@ def load_and_split_pdf() -> List[Document]:
 
         logger.info("Successfully loaded content from %d pages.", len(pages))
 
-        # Now, we split the documents into smaller chunks. This is a crucial
-        # step in RAG, as it allows the retriever to find very specific
-        # pieces of information. The `chunk_overlap` helps to maintain
-        # context between chunks.
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=250,
-                                                       chunk_overlap=50,
-                                                       length_function=len)
-        logger.info("Splitting document into chunks...")
+        # Now, we split the documents into smaller chunks. This is crucial
+        # for RAG retrieval. We use Q&A-aware separators to preserve
+        # complete question-answer pairs in FAQ documents.
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=250,
+            chunk_overlap=50,
+            length_function=len,
+            # Split at questions first to preserve Q&A structure
+            separators=["\n\nQ:", "\n\n", "\n", ". ", " ", ""]
+        )
+        logger.info("Splitting document into Q&A-aware chunks...")
         chunks = text_splitter.split_documents(pages)
         logger.info(
             "Document split into %d chunks, each with correct page number "

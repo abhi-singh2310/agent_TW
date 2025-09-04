@@ -205,11 +205,42 @@ body {
 }
 
 .message-sources {
-    font-style: italic;
     font-size: 0.8em;
     color: var(--brand-dark-gray); /* Darker color for readability */
     margin-top: -10px; /* Reduced the gap from the message-text */
     padding: 0 15px 10px; /* Add padding to bottom */
+}
+
+.sources-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--brand-text);
+}
+
+.source-item {
+    margin-bottom: 8px;
+}
+
+.source-reference {
+    font-style: italic;
+    color: var(--brand-dark-gray);
+    margin-bottom: 3px;
+}
+
+.source-quote {
+    font-style: normal;
+    font-size: 0.85em;
+    color: var(--brand-text);
+    margin-left: 15px;
+    margin-top: 4px;
+    padding: 8px 12px;
+    background-color: rgba(148, 188, 186, 0.1); /* Very light brand colour background */
+    border-left: 3px solid var(--brand-core);
+    border-radius: 4px;
+    line-height: 1.4;
+    white-space: pre-line; /* Preserve line breaks for bullet points */
+    word-wrap: break-word;
+    font-family: inherit;
 }
 
 /* --- Input Area --- */

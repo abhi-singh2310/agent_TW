@@ -136,11 +136,11 @@ def create_retriever(vector_store: Chroma, chunks: List[Document],
     bm25_retriever.k = top_k
 
     # 3. Create the ensemble retriever. The weights determine the relative
-    #    importance of each retriever's results. Here, we give a slight
-    #    preference to semantic search.
+    #    importance of each retriever's results. Here, we give stronger
+    #    preference to semantic search for better FAQ question matching.
     ensemble_retriever = EnsembleRetriever(
         retrievers=[semantic_retriever, bm25_retriever],
-        weights=[0.6, 0.4])
+        weights=[0.75, 0.25])  # Increased semantic weight from 0.6 to 0.75
 
     return ensemble_retriever
 

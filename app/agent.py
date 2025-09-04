@@ -174,29 +174,89 @@ class GenAIAgent:
         return "\n\n".join(doc.page_content for doc in docs)
 
     @staticmethod
-    def _format_sources(docs: List[Document]) -> List[Dict[str, Any]]:
+    def _extract_supporting_quotes(answer: str, docs: List[Document], max_quote_length: int = 120) -> Dict[str, str]:
         """
-        Formats the source documents into a structured list of dictionaries.
+        Extracts relevant quotes from Q&A structured documents.
+        
+        Simple approach: Extract A: sections from Q&A pairs in reranked documents.
+        
+        Args:
+            docs (List[Document]): The source documents used for answer generation.
+            max_quote_length (int): Maximum length for extracted quotes.
+            
+        Returns:
+            Dict[str, str]: Mapping of document identifier to relevant quote.
+        """
+        if not docs:
+            return {}
+        
+        quotes = {}
+        
+        for doc in docs:
+            doc_id = f"{doc.metadata.get('source', 'unknown')}_page_{doc.metadata.get('page', 'unknown')}"
+            content = doc.page_content
+            
+            # Look for Q&A structure and extract answer section
+            qa_match = re.search(r'Q:\s*[^\n]+\s*\n+A:\s*([^Q]+?)(?=Q:|$)', content, re.DOTALL)
+            
+            if qa_match:
+                # Extract the A: section
+                quote = qa_match.group(1).strip()
+                # Clean up formatting while preserving structure
+                quote = re.sub(r'\s+', ' ', quote)
+                
+                # Truncate if needed
+                if len(quote) > max_quote_length:
+                    quote = quote[:max_quote_length].rsplit(' ', 1)[0] + "..."
+                    
+                quotes[doc_id] = quote
+                    
+        return quotes
+
+    @staticmethod
+    def _format_sources(docs: List[Document], answer: str = "") -> List[Dict[str, Any]]:
+        """
+        Formats the source documents into a structured list with supporting quotes.
 
         This method extracts the source and page number from the metadata of
-        each document, removes duplicates, and sorts them.
+        each document, removes duplicates, sorts them, and includes supporting
+        quotes from the actual content used.
 
         Args:
             docs (List[Document]): A list of LangChain Document objects.
+            answer (str): The generated answer to find supporting quotes for.
 
         Returns:
-            List[Dict[str, Any]]: A list of unique, sorted source dictionaries.
+            List[Dict[str, Any]]: A list of unique, sorted source dictionaries with quotes.
         """
         if not docs:
             return []
 
-        sources = [{
-            "source": doc.metadata.get('source', 'unknown'),
-            "page": doc.metadata.get('page', 'unknown')
-        } for doc in docs]
-        # A simple way to deduplicate a list of dictionaries.
-        unique_sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
-        return sorted(unique_sources, key=lambda x: x.get('page', 0))
+        # Extract supporting quotes for better transparency
+        quotes = GenAIAgent._extract_supporting_quotes(answer, docs)
+        
+        sources = []
+        seen_pages = set()
+        
+        for doc in docs:
+            source_name = doc.metadata.get('source', 'unknown')
+            page_num = doc.metadata.get('page', 'unknown')
+            doc_id = f"{source_name}_page_{page_num}"
+            
+            # Avoid duplicate pages (in case multiple chunks from same page)
+            page_key = (source_name, page_num)
+            if page_key in seen_pages:
+                continue
+            seen_pages.add(page_key)
+            
+            source_entry = {
+                "source": source_name,
+                "page": page_num,
+                "quote": quotes.get(doc_id, "")
+            }
+            sources.append(source_entry)
+            
+        return sorted(sources, key=lambda x: x.get('page', 0))
 
     def _format_final_answer(self, text: str) -> str:
         """
@@ -279,7 +339,7 @@ class GenAIAgent:
 
             final_answer = self._format_final_answer(final_answer)
             source_docs = result.get("context", [])
-            formatted_sources = self._format_sources(source_docs)
+            formatted_sources = self._format_sources(source_docs, final_answer)
 
             return {"answer": final_answer, "sources": formatted_sources}
 
